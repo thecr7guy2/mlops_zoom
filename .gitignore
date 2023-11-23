@@ -1,0 +1,4 @@
+data/
+wandb/
+runs/
+__pycache__/
