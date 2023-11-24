@@ -5,3 +5,4 @@ __pycache__/
 aws_env/
 
 *.egg-info/
+.ipynb_checkpoints
