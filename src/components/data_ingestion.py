@@ -3,10 +3,11 @@ from sklearn.model_selection import train_test_split
 import os
 
 class DataIngestion:
-    def __init__(self, csv_file_path, test_size=0.2, random_state=42) :
+    def __init__(self, csv_file_path, test_size=0.2, random_state=42,pre_process=False) :
         self.csv_path = csv_file_path
         self.test_size = test_size
         self.random_state = random_state
+        self.preprocess = pre_process
     
     def read_data(self):
         """Read data from CSV file."""
@@ -20,6 +21,9 @@ class DataIngestion:
         """Preprocess the data."""
         # Add your data preprocessing steps here
         # Example: data = data.dropna()
+        # drop_col = ['url', 'region_url', 'title_status', 'VIN', 'size', 'image_url', 'description', 'lat','long', 'id','county']
+        # data = data.drop(columns=drop_col)
+        data = data.dropna()
         return data
 
     def split_and_save_data(self, data):
@@ -39,10 +43,10 @@ class DataIngestion:
     def execute(self):
         """Execute the data ingestion process."""
         data = self.read_data()
-        #processed_data = self.preprocess_data(data)
+        if self.preprocess == True:
+            processed_data = self.preprocess_data(data)
+        else:
+            pass
         self.split_and_save_data(data)
         return self.train_file_path, self.test_file_path
 
-
-di_obj = DataIngestion("../../data/vehicles.csv")
-a,b = di_obj.execute()
