@@ -51,8 +51,6 @@ class DataTransformation:
         y_test = np.array(y_test_df)
 
 
-
-
         # Now that I fit transfrom the column transformer I can use it whenever I later need it 
         a=os.path.join(self.artifacts_path,"transformer.joblib")
         dump(transformer_obj,a)
