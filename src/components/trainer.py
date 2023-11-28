@@ -17,9 +17,12 @@ from sklearn.ensemble import RandomForestRegressor,AdaBoostRegressor,GradientBoo
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.linear_model import LinearRegression
 from sklearn.tree import DecisionTreeRegressor
-from sklearn.metrics import r2_score
+from sklearn.metrics import r2_score,mean_squared_error, mean_absolute_error
 from joblib import dump
 import os 
+import wandb
+import random
+import string
 
 class Trainer:
     def __init__(self,X_train,X_test,y_train,y_test,artifact_path):
@@ -31,24 +34,37 @@ class Trainer:
         #                "Decision Tree": DecisionTreeRegressor(),
         #                "Linear Regression" : LinearRegression()}
         self.models = {"Linear Regression" : LinearRegression(),
-                       "Decision Tree": DecisionTreeRegressor(),
-                       "KNN Regression": KNeighborsRegressor()}
-        self.metric = r2_score
+                       "Decision Tree": DecisionTreeRegressor()}
         self.model_path = artifact_path
+
+    def _generate_random_string(self, length=6):
+        """Generate a random string of fixed length."""
+        letters = string.ascii_lowercase
+        return ''.join(random.choice(letters) for i in range(length))
         
     def evaluate_models(self):
         report ={}
         for i in range (len(self.models.keys())):
-            model = list(self.models.values())[i]
-            print("Sai1")
-            model.fit(self.X_train,self.y_train)
-            print("Sai2")
-            preds = model.predict(self.X_test)
-            print("Sai3")
-            model_score = self.metric(self.y_test,preds)
-            print("Sai4")
-            report[list(self.models.keys())[i]] = model_score
-            print("Model evaluated")
+            model_n = list(self.models.keys())[i]
+            random_str = self._generate_random_string()
+            unique_run_name = f"{model_n}_{random_str}"
+            with wandb.init(project="mlops", entity="thecr7guy3", name= unique_run_name):
+                wandb.config.update({"model_name": list(self.models.keys())[i]})
+                model = list(self.models.values())[i]
+                print(f"Training {list(self.models.keys())[i]}")
+                model.fit(self.X_train,self.y_train)
+                print("Fitted the model on training Data")
+                preds = model.predict(self.X_test)
+                print("Generated predictions")
+                model_score = r2_score(self.y_test,preds)
+                rmse = mean_squared_error(self.y_test,preds,squared =False)
+                mae = mean_absolute_error(self.y_test,preds)
+                print("Calculated the metrics")
+                report[list(self.models.keys())[i]] = model_score
+                wandb.log({"R2 score": model_score})
+                wandb.log({"Root Mean Squared Error": rmse})
+                wandb.log({"Mean Absolute error": mae})
+                print("Model evaluated")
         return report 
     
     def report_results(self):
