@@ -27,9 +27,12 @@ class Trainer:
         self.X_test = X_test 
         self.y_train = y_train
         self.y_test = y_test
-        self.models = {"Random Forest": RandomForestRegressor(),
+        # self.models = {"Random Forest": RandomForestRegressor(),
+        #                "Decision Tree": DecisionTreeRegressor(),
+        #                "Linear Regression" : LinearRegression()}
+        self.models = {"Linear Regression" : LinearRegression(),
                        "Decision Tree": DecisionTreeRegressor(),
-                       "Linear Regression" : LinearRegression()}
+                       "KNN Regression": KNeighborsRegressor()}
         self.metric = r2_score
         self.model_path = artifact_path
         
@@ -37,18 +40,25 @@ class Trainer:
         report ={}
         for i in range (len(self.models.keys())):
             model = list(self.models.values())[i]
+            print("Sai1")
             model.fit(self.X_train,self.y_train)
+            print("Sai2")
             preds = model.predict(self.X_test)
+            print("Sai3")
             model_score = self.metric(self.y_test,preds)
+            print("Sai4")
             report[list(self.models.keys())[i]] = model_score
+            print("Model evaluated")
         return report 
     
     def report_results(self):
         model_scores = self.evaluate_models()
+        print("All Models evaluated")
         best_model_name = max(model_scores, key=model_scores.get)
         best_score = model_scores[best_model_name]
-        best_model = self.mdoels[best_model_name]
+        best_model = self.models[best_model_name]
         self.save_best_model(best_model,best_model_name)
+        print("Saved the best model")
         return best_model_name,best_score
     
     def save_best_model(self,model,model_name):
