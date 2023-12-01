@@ -1,0 +1,25 @@
+method: grid
+metric:
+  goal: maximize
+  name: r2_score
+name: RandomForest
+parameters:
+  max_depth:
+    values:
+    - 10
+    - 20
+    - 30
+    - null
+  max_features:
+    values:
+    - null
+    - sqrt
+    - log2
+  model_type:
+    value: RandomForest
+  n_estimators:
+    values:
+    - 100
+    - 200
+    - 300
+program: sweep.py
