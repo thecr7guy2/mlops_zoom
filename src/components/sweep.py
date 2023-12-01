@@ -4,8 +4,8 @@ from sklearn.neighbors import KNeighborsRegressor
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.metrics import r2_score, mean_squared_error, mean_absolute_error
 from joblib import dump
-from data_ingestion import DataIngestion
-from data_transformation import DataTransformation
+from data_ingestion import data_ingestion_flow
+from data_transformation import data_transformation_flow
 import os
 
 def get_model(config):
@@ -55,8 +55,6 @@ def get_model(config):
         raise ValueError(f"Unsupported model type: {config.model_type}")
     return model
 
-   
-        
 def train_and_evaluate(model, X_train, X_test, y_train, y_test):
     model.fit(X_train, y_train)
     preds = model.predict(X_test)
@@ -82,10 +80,8 @@ def save_and_log_model(model,config,model_path):
 def main():
     with wandb.init(project="mlops", entity="thecr7guy3") as run:
         config = run.config
-        di_obj = DataIngestion("../../data/pre_proc.csv")
-        train_path,test_path = di_obj.execute()
-        dt_obj = DataTransformation("../../artifacts/",train_path,test_path)
-        X_train, X_test, y_train, y_test,a= dt_obj.execute()
+        train_path,test_path = data_ingestion_flow("../../data/pre_proc.csv")
+        X_train, X_test, y_train, y_test,a = data_transformation_flow("../../artifacts/",train_path,test_path)
         model = get_model(config)
         metrics = train_and_evaluate(model,X_train, X_test, y_train, y_test)
         #save_and_log_model(model,config,"../../artifacts/")
