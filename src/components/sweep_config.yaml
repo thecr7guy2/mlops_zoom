@@ -2,24 +2,30 @@ method: grid
 metric:
   goal: maximize
   name: r2_score
-name: RandomForest
+name: KNN
 parameters:
-  max_depth:
+  algorithm:
     values:
-    - 10
-    - 20
-    - 30
-    - null
-  max_features:
+    - auto
+    - ball_tree
+    - kd_tree
+    - brute
+  metric: 
     values:
-    - null
-    - sqrt
-    - log2
+    - euclidean
+    - manhattan
+    - minkowski
   model_type:
-    value: RandomForest
-  n_estimators:
+    value: KNN
+  n_neighbors:
     values:
-    - 100
-    - 200
-    - 300
+    - 3
+    - 5
+    - 7
+    - 9
+    - 11
+  weights:
+    values:
+    - uniform
+    - distance
 program: sweep.py

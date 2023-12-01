@@ -43,10 +43,39 @@ model_hyperparameters = {
         "max_depth": [10, 20, 30, None],
         "max_features": [None,"sqrt", "log2"]
     },
+
     "KNN": {
-        "n_neighbors": [3, 5, 7, 9],
-        "metric": ["euclidean", "manhattan", "minkowski"]
-    }
+    "n_neighbors": [3, 5, 7, 9, 11],
+    "weights": ["uniform", "distance"],
+    "metric": ["euclidean", "manhattan", "minkowski"],
+    "algorithm": ["auto", "ball_tree", "kd_tree", "brute"]
+},
+"DecisionTree": {
+    "max_depth": [5, 10, 15, 20, None],
+    "min_samples_split": [2, 5, 10, 15],
+    "min_samples_leaf": [1, 2, 4, 6],
+    "max_features": [None, "auto", "sqrt", "log2"]
+},
+"GradientBoosting": {
+    "n_estimators": [100, 200, 300],
+    "learning_rate": [0.01, 0.05, 0.1, 0.2],
+    "max_depth": [3, 5, 7, 9],
+    "min_samples_split": [2, 4, 6],
+    "min_samples_leaf": [1, 3, 5]
+},
+"AdaBoost": {
+    "n_estimators": [50, 100, 200],
+    "learning_rate": [0.01, 0.1, 1.0],
+    "loss": ["linear", "square", "exponential"]
+},
+# "CatBoost": {
+#     "iterations": [100, 300, 500],
+#     "learning_rate": [0.01, 0.1, 0.2],
+#     "depth": [4, 6, 8],
+#     "l2_leaf_reg": [1, 3, 5],
+#     "border_count": [32, 64, 128]
+# }
+
 }   
 
 parser = argparse.ArgumentParser(description='Run a W&B sweep for a specified model.')
