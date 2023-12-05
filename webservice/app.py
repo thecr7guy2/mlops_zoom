@@ -3,8 +3,8 @@ import pandas as pd
 from flask import Flask,request,jsonify
 
 
-model_path = "../artifacts/KNN_Regression_best_model.joblib"
-transformer_path = "../artifacts/transformer.joblib"
+model_path = "artifacts/KNN_Regression_best_model.joblib"
+transformer_path = "artifacts/transformer.joblib"
 
 app = Flask("Used Car Price Prediction")
 

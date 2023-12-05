@@ -7,7 +7,7 @@ vehicle_data = {
     "condition": "excellent",
     "cylinders": "six",
     "fuel": "gas",
-    "odometer": 128000.0,
+    "odometer": 1280.0,
     "transmission": "automatic",
     "drive": "rwd",
     "type": "truck",
@@ -15,7 +15,7 @@ vehicle_data = {
     "vehicle_age": 10.0
 }
 
-url = "http://127.0.0.1:6969/predict_car_price"
+url = "http://54.159.125.199:6969/predict_car_price"
 
 response = requests.post(url, json=vehicle_data)
 
