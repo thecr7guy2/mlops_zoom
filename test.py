@@ -1,20 +1,22 @@
-from src.components.data_ingestion import data_ingestion_flow
-from src.components.data_transformation import data_transformation_flow
-from src.components.trainer import training_flow
-from prefect import flow
+import requests
 
-@flow
-def main_flow():
-    # Data Ingestion
-    train_path, test_path = data_ingestion_flow("data/pre_proc.csv")
 
-    # Data Transformation
-    X_train, X_test, y_train, y_test, transformer_path = data_transformation_flow("artifacts/", train_path, test_path)
+vehicle_data = {
+    "region": "auburn",
+    "manufacturer": "ford",
+    "condition": "excellent",
+    "cylinders": "six",
+    "fuel": "gas",
+    "odometer": 128000.0,
+    "transmission": "automatic",
+    "drive": "rwd",
+    "type": "truck",
+    "paint_color": "black",
+    "vehicle_age": 10.0
+}
 
-    # Model Training and Evaluation
-    print("Trainer object Initialised")
-    best_model_name, best_score= training_flow(X_train, X_test, y_train, y_test, "artifacts/")
-    print(best_model_name, best_score)
+url = "http://127.0.0.1:6969/predict_car_price"
 
-if __name__ == "__main__":
-    main_flow()
+response = requests.post(url, json=vehicle_data)
+
+print(response.json())
