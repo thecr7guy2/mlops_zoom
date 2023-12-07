@@ -3,21 +3,27 @@ import requests
 import json
 import time
 from PIL import Image
+import os 
 
 st.set_page_config(
     page_title='',
     layout='centered',
     page_icon=None,
     initial_sidebar_state='auto',
-)
+)   
 
 IMAGE_PATH = 'images/logo.png'
 IMAGE_PATH2 = 'images/car1.jpg'
+IMAGE_PATH3 = 'images/car2.jpg'
+IMAGE_PATH4 = 'images/car3.jpg'
+IMAGE_PATH5 = 'images/car5.jpg'
+backend_url = os.getenv('BACKEND_URL')
 
 
-def send_request(data):
+def send_request(k,v):
     # Replace this URL with the endpoint of your machine learning model
-    url = "http://your-model-endpoint.com/predict"
+    url = backend_url + "/predict_car_price"
+    data = dict(zip(k,v))
     response = requests.post(url, json=data)
     if response.status_code == 200:  # pylint: disable=no-else-return
         return response.json()
@@ -31,7 +37,7 @@ def app():
         unsafe_allow_html=True,
     )
 
-    col1 ,mid, col2 = st.columns([35,6,55])
+    col1 ,mid, col2 = st.columns([55,6,35])
 
     regions = [
     'vermont', 'columbus', 'albany', 'minneapolis / st paul', 'rochester',
@@ -80,13 +86,19 @@ def app():
 
     image = Image.open(IMAGE_PATH)
     image2 = Image.open(IMAGE_PATH2)
+    image3 = Image.open(IMAGE_PATH3)
+    image4 = Image.open(IMAGE_PATH4)
+    image5 = Image.open(IMAGE_PATH5)
 
-    with col1:
+    with col2:
         st.markdown("""***""")
         st.image(image)
         st.image(image2)
+        st.image(image3)
+        st.image(image4)
+        st.image(image5)
         st.markdown("""***""")
-    with col2:
+    with col1:
         st.markdown("""***""")
         with st.form("predict"):
             region = st.selectbox("Which Region Does Your Car Belong To?",
@@ -128,7 +140,7 @@ def app():
             else:
                 drive = "fwd"
 
-            type = st.selectbox("What Type of Vehicle Do You Own?",
+            typess = st.selectbox("What Type of Vehicle Do You Own?",
                                   car_type,
                                   placeholder="Select the Car type")
             
@@ -138,12 +150,22 @@ def app():
             
             vehicle_age = st.number_input("How Old is Your Vehicle?",placeholder="Input the Vehicle Age",step = 1)
 
+            keyss = ['region', 'manufacturer', 'condition', 'cylinders', 'fuel', 'odometer', 'transmission', 'drive', 'type', 'paint_color', 'vehicle_age']
+            valuess = [region,manufacturer,condition,cylinders,fuel,odometer,transmission,drive,typess,paint_color,vehicle_age]
+
             
             if st.form_submit_button('Predict Price'):
-                # result_json = predict(row, feat_cols)
-                # result = result_json['price']
+                result_json = send_request(keyss,valuess)
+                result = result_json['vehicle_cost']
+                # result = 1000
                 with st.spinner('Wait for it...'):
-                     time.sleep(1)
+                     time.sleep(2)
+                     st.markdown(f"""
+    <h5 style='text-align: center; color: #FAD02E;'>🚗 PriceMyRide Car Valuation 🚗</h5>
+    <h6 style='text-align: center; color: #20E0A1;'>Your Car's Estimated Value</h6>
+    <h4 style='text-align: center; color: #F65314;'>${result:,}</h4>
+    """, unsafe_allow_html=True)
+
                      st.balloons()                
 
         st.markdown("""***""")

@@ -1,0 +1,32 @@
+version: "3.8"
+
+
+networks:
+  front-tier:
+  back-tier:
+
+services:
+  backend:
+    build:
+      context: ./flask_backend
+      dockerfile: Dockerfile
+    volumes:
+      - ./flask_backend/app.py:/app.py
+    ports:
+      - "6969:6969"
+    networks:
+      - back-tier
+
+  frontend:
+    build:
+      context: ./stremlit_frontend
+      dockerfile: Dockerfile
+    depends_on:
+      - backend
+    environment:
+      - BACKEND_URL=http://backend:6969
+    ports:
+      - "8501:8501"
+    networks:
+      - front-tier
+      - back-tier
