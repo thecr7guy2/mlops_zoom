@@ -48,6 +48,7 @@ def apply_transformer_obj(train_df, test_df, preprocessor):
 @flow
 def data_transformation_flow(artifacts_path, train_df_path, test_df_path):
     train_df, test_df = read_train_test(train_df_path, test_df_path)
+    
     preprocessor = create_transformer_obj(train_df)
     X_train, X_test, y_train, y_test = apply_transformer_obj(train_df, test_df, preprocessor)
     transformer_path = os.path.join(artifacts_path, "transformer.joblib")

@@ -2,6 +2,7 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 import os
 from prefect import task,flow
+import mlflow
 
 @task(retries=5, retry_delay_seconds=5)
 def read_data(csv_path):
@@ -33,6 +34,8 @@ def split_and_save_data(data, csv_path, test_size, random_state):
     # Save files
     X_train.to_csv(train_file_path, index=False)
     X_test.to_csv(test_file_path, index=False)
+
+   
     return train_file_path, test_file_path
 
 @flow
@@ -44,4 +47,5 @@ def data_ingestion_flow(csv_path, test_size=0.2, random_state=42, preprocess=Fal
     else:
         pass
     train_path, test_path = split_and_save_data(data, csv_path, test_size, random_state)
+    
     return train_path, test_path
