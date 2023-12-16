@@ -30,7 +30,7 @@ def hyperparameter_tuning(train,valid, optuna_mlflow_callback):
         booster = xgb.train(
                 params=params,
                 dtrain=train,
-                num_boost_round=1000,
+                num_boost_round=100,
                 evals=[(valid, "validation")],
                 early_stopping_rounds=10,
             )
@@ -42,7 +42,7 @@ def hyperparameter_tuning(train,valid, optuna_mlflow_callback):
         return rmse
     
     study = optuna.create_study(direction="minimize")
-    study.optimize(objective, n_trials=250, callbacks=[optuna_mlflow_callback])
+    study.optimize(objective, n_trials=5, callbacks=[optuna_mlflow_callback])
 
     return study
 
@@ -70,7 +70,7 @@ def get_best_params(best_run):
         best_params_df = best_run[param_columns]
         best_params_dict = best_params_df.iloc[0].to_dict()
         best_params_dict = {k.split('.', 1)[1]: float(v) for k, v in best_params_dict.items()}
-        best_params_dict["device"] = "cuda"
+        #best_params_dict["device"] = "cuda"
         best_params_dict["tree_method"] = "hist"
         best_params_dict["objective"] = "reg:squarederror"
         best_params_dict["random_state"] = 7
@@ -93,7 +93,7 @@ def train_best_model(best_params,train,valid,train_path,test_path,trans_path):
         best_model = xgb.train(
             params=best_params,
             dtrain=train,
-            num_boost_round=1000,
+            num_boost_round=100,
             evals=[(valid, "validation")],
             early_stopping_rounds=20,
         )
@@ -141,11 +141,11 @@ def stage_model(client):
     registered_model_version = max(model_version, key=lambda v: int(v.version)).version if model_version else None
 
 
-    model_version = client.search_model_versions("name='used_car_prediction_second_best_xgboost'")
-    contender_model_version = max(model_version, key=lambda v: int(v.version)).version if model_version else None
+    #model_version = client.search_model_versions("name='used_car_prediction_second_best_xgboost'")
+    #contender_model_version = max(model_version, key=lambda v: int(v.version)).version if model_version else None
     
     client.set_registered_model_alias("used_car_prediction_best_xgboost", "champion", registered_model_version)
-    client.set_registered_model_alias("used_car_prediction_second_best_xgboost", "contender",contender_model_version)
+    #client.set_registered_model_alias("used_car_prediction_second_best_xgboost", "contender",contender_model_version)
     
     client.set_registered_model_tag("used_car_prediction_best_xgboost", "task", "regression")
    

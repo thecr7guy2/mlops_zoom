@@ -8,7 +8,6 @@ import sys
 sys.path.append('../')
 
 
-
 from components.data_ingestion import data_ingestion_flow
 from components.data_transformation import data_transformation_flow
 from components.trainer import training_flow
