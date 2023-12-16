@@ -76,4 +76,10 @@ def main_flow():
     print(best_params)
 
 if __name__ == "__main__":
-    main_flow()
+    main_flow.serve(
+        name="my-first-deployment",
+        cron="* * * * *",
+        tags=["testing", "tutorial"],
+        description="My first ever deployement and testing out prefect",
+        version="tutorial/deployments",
+    )
