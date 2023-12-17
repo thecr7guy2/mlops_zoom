@@ -21,8 +21,8 @@ def hyperparameter_tuning(train,valid, optuna_mlflow_callback):
             'objective':'reg:squarederror',
             'learning_rate': trial.suggest_categorical('learning_rate', [0.008, 0.01, 0.02, 0.05]),
             'random_state': 7,
-            'max_depth': trial.suggest_int('max_depth', 3, 30),
-            'min_child_weight': trial.suggest_int('min_child_weight', 1, 10),
+            'max_depth': trial.suggest_int('max_depth', 3, 10), #change
+            'min_child_weight': trial.suggest_int('min_child_weight', 1, 5), #change
             'lambda': trial.suggest_float('lambda', 1e-4, 10.0, log=True),
             'alpha': trial.suggest_float('alpha', 1e-4, 10.0, log=True),
         }

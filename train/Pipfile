@@ -12,6 +12,7 @@ optuna = "*"
 xgboost = "*"
 boto3 = "*"
 psycopg2-binary = "*"
+prefect-docker = "*"
 
 [dev-packages]
 
