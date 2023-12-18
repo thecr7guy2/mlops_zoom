@@ -1,16 +1,6 @@
-# from src.components.data_ingestion import data_ingestion_flow
-# from src.components.data_transformation import data_transformation_flow
-# from src.components.trainer import training_flow
-
-import sys
-
-import sys
-sys.path.append('../')
-
-
-from components.data_ingestion import data_ingestion_flow
-from components.data_transformation import data_transformation_flow
-from components.trainer import training_flow
+from train.components.data_ingestion import data_ingestion_flow
+from train.components.data_transformation import data_transformation_flow
+from train.components.trainer import training_flow
 from prefect import flow,task
 
 import mlflow
@@ -73,4 +63,8 @@ def main_flow():
     best_params = training_flow(train,valid,optuna_mlflow_callback,mlflow_experiment_name,mlflow_client,train_path,test_path,transformer_path)
 
 
-    print(best_params)
+    print("sai")
+
+
+if __name__ == "__main__":
+    main_flow()

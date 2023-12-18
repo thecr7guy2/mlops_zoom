@@ -1,0 +1,3 @@
+{
+  "main-flow": "train/pipelines/train_pipe.py:main_flow"
+}

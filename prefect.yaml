@@ -21,15 +21,15 @@ pull:
 
 # the deployments section allows you to provide configuration for deploying flows
 deployments:
-- name: null
+- name: train_deployement
   version: null
   tags: []
   description: null
   schedule: {}
   flow_name: null
-  entrypoint: null
+  entrypoint: train/pipelines/train_pipe.py:main_flow
   parameters: {}
   work_pool:
-    name: null
+    name: 
     work_queue_name: null
     job_variables: {}
