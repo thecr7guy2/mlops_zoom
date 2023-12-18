@@ -1,9 +1,4 @@
-data/
-wandb/
-runs/
 __pycache__/
-aws_env/
-
 *.egg-info/
 **/.ipynb_checkpoints/
 

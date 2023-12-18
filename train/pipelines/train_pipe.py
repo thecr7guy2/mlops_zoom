@@ -11,7 +11,8 @@ from optuna.integration.mlflow import MLflowCallback
 import xgboost as xgb
 
 import os
-
+from prefect_aws import AwsCredentials
+AwsCredentials.load("BLOCK-NAME-PLACEHOLDER")
 
 
 @task(name="MLFlow Init")

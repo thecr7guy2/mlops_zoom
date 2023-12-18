@@ -13,6 +13,7 @@ xgboost = "*"
 boto3 = "*"
 psycopg2-binary = "*"
 prefect-docker = "*"
+prefect-aws = "*"
 
 [dev-packages]
 
