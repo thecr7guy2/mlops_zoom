@@ -11,9 +11,6 @@ from optuna.integration.mlflow import MLflowCallback
 import xgboost as xgb
 
 import os
-from prefect_aws import AwsCredentials
-AwsCredentials.load("BLOCK-NAME-PLACEHOLDER")
-
 
 @task(name="MLFlow Init")
 def init_mlflow(mlflow_tracking_uri, mlflow_experiment_name):
@@ -51,11 +48,11 @@ def main_flow():
         mlflow_tracking_uri, mlflow_experiment_name
     )
     # Data Ingestion
-    train_path, test_path = data_ingestion_flow("~/mlops_zoom/data/pre_proc.csv")
+    train_path, test_path = data_ingestion_flow("data/pre_proc.csv")
 
    
     # Data Transformation
-    X_train, X_test, y_train, y_test, transformer_path = data_transformation_flow("~/mlops_zoom/artifacts/", train_path, test_path)
+    X_train, X_test, y_train, y_test, transformer_path = data_transformation_flow("artifacts/", train_path, test_path)
 
    
     train = xgb.DMatrix(X_train, label=y_train)
