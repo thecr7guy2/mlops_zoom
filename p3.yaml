@@ -1,0 +1,78 @@
+###
+### A complete description of a Prefect Deployment for flow 'main-flow'
+###
+name: test2
+description: null
+version: 67caa719911d0a055b4bb3bebeb39c77
+# The work queue that will handle this deployment's runs
+work_queue_name: test
+work_pool_name: abc
+tags: []
+parameters: {}
+schedule: null
+is_schedule_active: true
+infra_overrides: {}
+
+###
+### DO NOT EDIT BELOW THIS LINE
+###
+flow_name: main-flow
+manifest_path: null
+infrastructure:
+  type: docker-container
+  env: {}
+  labels: {}
+  name: null
+  command: null
+  image: thecr7guy/test_1
+  image_pull_policy: null
+  image_registry: null
+  networks: []
+  network_mode: null
+  auto_remove: false
+  volumes: []
+  stream_output: true
+  memswap_limit: null
+  mem_limit: null
+  privileged: false
+  _block_document_id: 6be47640-3793-4457-a728-e4a2501bb881
+  _block_document_name: testdocker
+  _is_anonymous: false
+  block_type_slug: docker-container
+  _block_type_slug: docker-container
+storage:
+  bucket_name: pricemyride
+  credentials:
+    aws_access_key_id: AKIAQHSLJB2LGCF5QBGF
+    aws_secret_access_key: '**********'
+    aws_session_token: null
+    profile_name: null
+    region_name: us-east-1
+    aws_client_parameters:
+      api_version: null
+      use_ssl: true
+      verify: true
+      verify_cert_path: null
+      endpoint_url: null
+      config: null
+    _block_document_id: 76245b2f-9c74-4457-81f8-dca045fd3226
+    _block_document_name: awscreds
+    _is_anonymous: false
+    block_type_slug: aws-credentials
+  bucket_folder: ''
+  _block_document_id: 63ce7e74-5575-4262-8793-f20f99410a17
+  _block_document_name: mys3bucket
+  _is_anonymous: false
+  block_type_slug: s3-bucket
+  _block_type_slug: s3-bucket
+path: ''
+entrypoint: train/pipelines/train_pipe.py:main_flow
+parameter_openapi_schema:
+  title: Parameters
+  type: object
+  properties: {}
+  required: null
+  definitions: null
+timestamp: '2023-12-21T18:59:39.255594+00:00'
+triggers: []
+enforce_parameter_schema: null

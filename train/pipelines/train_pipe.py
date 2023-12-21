@@ -12,8 +12,23 @@ import xgboost as xgb
 
 import os
 
+from prefect.blocks.system import Secret
+
+
+
+
+
 @task(name="MLFlow Init")
 def init_mlflow(mlflow_tracking_uri, mlflow_experiment_name):
+    secret_block = Secret.load("accesskey")
+    aws_access_key_id = secret_block.get()
+
+    secret_block = Secret.load("secretkey")
+    aws_secret_access_key = secret_block.get()
+
+    os.environ['AWS_ACCESS_KEY_ID'] = aws_access_key_id
+    os.environ['AWS_SECRET_ACCESS_KEY'] = aws_secret_access_key
+
     client = MlflowClient(mlflow_tracking_uri)
     mlflow.set_tracking_uri(mlflow_tracking_uri)
     

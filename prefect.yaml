@@ -7,10 +7,25 @@ name: mlops_zoom
 prefect-version: 2.14.10
 
 # build section allows you to manage and build docker images
-build: null
+build:
+- prefect_docker.deployments.steps.build_docker_image:
+    id: build_image
+    requires: prefect-docker>=0.3.1
+    image_name: thecr7guy/test_1
+    tag: latest
+    dockerfile: auto
 
 # push section allows you to manage if and how this project is uploaded to remote locations
-push: null
+push:
+# - prefect_docker.deployments.steps.push_docker_image:
+#     requires: prefect-docker>=0.3.1
+#     image_name: '{{ build_image.image_name }}'
+#     tag: '{{ build_image.tag }}'
+# - prefect_aws.deployments.steps.push_to_s3:
+#     id: push_code
+#     requires: prefect-aws>=0.3.4
+#     bucket: pricemyride
+#     folder: mlops_zoom
 
 # pull section allows you to provide instructions for cloning this project in remote locations
 pull:
@@ -22,14 +37,28 @@ pull:
 # the deployments section allows you to provide configuration for deploying flows
 deployments:
 - name: train_deployement
-  version: null
+  version:
   tags: []
-  description: null
-  schedule: {}
-  flow_name: null
+  description:
+  schedule:
   entrypoint: train/pipelines/train_pipe.py:main_flow
   parameters: {}
   work_pool:
-    name: trypool_1
-    work_queue_name: default
-    job_variables: {}
+    name: abc
+    work_queue_name:
+    job_variables:
+      image: '{{ build_image.image }}'
+
+- name: test2
+  version:
+  tags: []
+  description:
+  entrypoint: train/pipelines/train_pipe.py:main_flow
+  parameters: {}
+  work_pool:
+    name: abc
+    work_queue_name:
+    job_variables:
+      env:
+        EXTRA_PIP_PACKAGES: "boto3 pandas prefect mlflow xgboost scikit-learn optuna prefect-aws"
+  schedule:
