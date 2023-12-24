@@ -10,9 +10,14 @@ services:
       context: ./flask_backend
       dockerfile: Dockerfile
     volumes:
-      - ./flask_backend/app.py:/app.py
+      - ~/.aws:/root/.aws:ro
+    environment:
+      - MLFLOW_URL=http://host.docker.internal:5000
+      - PREFECT_URL=http://host.docker.internal:4200
     ports:
       - "6969:6969"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     networks:
       - back-tier
 

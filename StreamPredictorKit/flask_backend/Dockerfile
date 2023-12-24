@@ -12,7 +12,6 @@ RUN pipenv install --system --deploy
 
 
 COPY app.py /app/
-COPY artifacts/ /app/artifacts/
 
 EXPOSE 6969
 
