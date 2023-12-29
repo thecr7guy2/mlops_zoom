@@ -4,6 +4,10 @@ networks:
   front-tier:
   back-tier:
 
+volumes:
+    postgres_data: {}
+
+
 services:
   backend:
     build:
@@ -14,12 +18,15 @@ services:
     environment:
       - MLFLOW_URL=http://host.docker.internal:5000
       - PREFECT_URL=http://host.docker.internal:4200
+      - POSTGRES_URL=http://database:5432
     ports:
       - "6969:6969"
     extra_hosts:
       - "host.docker.internal:host-gateway"
     networks:
       - back-tier
+    depends_on:
+      - database
 
   frontend:
     build:
@@ -34,3 +41,24 @@ services:
     networks:
       - front-tier
       - back-tier
+
+  database:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: example
+    ports:
+      - "5432:5432"
+    networks:
+      - back-tier
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - "8080:8080"
+    networks:
+      - back-tier
+      - front-tier  

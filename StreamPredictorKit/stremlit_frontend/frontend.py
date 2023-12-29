@@ -21,7 +21,6 @@ backend_url = os.getenv('BACKEND_URL')
 
 
 def send_request(k,v):
-    # Replace this URL with the endpoint of your machine learning model
     url = backend_url + "/predict_car_price"
     data = dict(zip(k,v))
     response = requests.post(url, json=data)
