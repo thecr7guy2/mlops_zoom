@@ -1,9 +1,12 @@
 from prefect import task, flow
 from prefect.deployments import run_deployment
+import random
+
 
 @task(name="print")
 def status():
-    print("I have sucessfully monitored a task")
+    response = run_deployment(name="main-flow/test2")
+
 
 @flow(name="monitor")
 def monitor():
