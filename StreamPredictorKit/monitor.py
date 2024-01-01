@@ -1,13 +1,24 @@
-import mlflow
-from mlflow import MlflowClient
+from prefect import task, flow
+from prefect.deployments import run_deployment
 
-import
+@task(name="print")
+def status():
+    print("I have sucessfully monitored a task")
+
+@flow(name="monitor")
+def monitor():
+    status()
+    
+if __name__ == "__main__":
+    monitor()
 
 
-@task(name="MLFlow Init")
-def init_mlflow(mlflow_tracking_uri):
-    client = MlflowClient(mlflow_tracking_uri)
-    mlflow.set_tracking_uri(mlflow_tracking_uri)
-    return client
 
 
+# prefect deployment build src/main.py:create_pytrends_report \
+#   -n google-trends-gh-docker \
+#   -q test \
+#   -sb github/pytrends \
+#   -ib docker-container/google-trends \
+#   -o prefect-docker-deployment \
+#   --apply
