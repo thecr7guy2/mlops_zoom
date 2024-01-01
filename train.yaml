@@ -1,7 +1,7 @@
 ###
 ### A complete description of a Prefect Deployment for flow 'main-flow'
 ###
-name: test2
+name: train_deployement
 description: null
 version: 67caa719911d0a055b4bb3bebeb39c77
 # The work queue that will handle this deployment's runs
@@ -73,6 +73,6 @@ parameter_openapi_schema:
   properties: {}
   required: null
   definitions: null
-timestamp: '2023-12-21T18:59:39.255594+00:00'
+timestamp: '2024-01-01T18:26:27.549344+00:00'
 triggers: []
 enforce_parameter_schema: null
