@@ -7,10 +7,9 @@ from prefect.blocks.system import Secret
 import os 
 import joblib
 import pandas as pd
+from datetime import datetime
 
 import psycopg2
-
-from evidently import ColumnMapping
 from evidently.report import Report
 from evidently.metrics import DatasetCorrelationsMetric
 
@@ -32,19 +31,18 @@ def init_mlflow(mlflow_tracking_uri):
     return client
 
 def prep_db():
-    conn = psycopg2.connect("host=database port=5432 user=postgres password=example")
+    conn = psycopg2.connect("host=localhost port=5432 user=postgres password=example")
     conn.autocommit = True
     cursor = conn.cursor()
     query = cursor.execute("SELECT 1 FROM pg_database WHERE datname='monitor'")
     res = cursor.fetchall()
     if len(res) == 0:
-        cursor.execute("create database user_data;")
+        cursor.execute("create database monitor;")
         cursor.close()
         conn.close()
     else:
         cursor.close()
         conn.close()
-
 
 def get_best_model(client):
     experiment_name = "Car Price Prediction Best features"
@@ -91,17 +89,35 @@ def run_evidently(ref,curr):
     result = data_quality_dataset_report.as_dict()
     return result
 
+def send_metrics_to_db(result):
 
+    total_drift_detected = 2828
+
+    with psycopg2.connect("host=localhost port=5432 dbname=monitor user=postgres password=example") as conn:
+        conn.autocommit = True
+        cursor = conn.cursor()
+        cursor.execute(
+            "insert into evidently_drift_metrics(timestamp, model_drift, mmd_drift,cosine_dist_drift, total_drift_detected) values (%s, %s, %s, %s, %s)",
+            (
+                datetime.now(),
+                model_drift,
+                mmd_drift,
+                cosine_dist_drift,
+                total_drift_detected,
+            ),
+        )
+
+    if total_drift_detected:
+        response = run_deployment(name='main-flow/train_deployement')
     
 
 
 # @flow(name="monitor")
 def monitor():
-
     ##############################################
     MLFLOW_TRACKING_URI = "http://127.0.0.1:5000"
     ##############################################
-
+    prep_db()
     mlflow_client = init_mlflow(MLFLOW_TRACKING_URI)
     model = get_best_model(mlflow_client)
     pre_processor = get_transformer()
@@ -111,7 +127,7 @@ def monitor():
     ref["prediction"] = get_predictions(model,pre_ref)
     curr["prediction"] = get_predictions(model,pre_curr)
     result = run_evidently(ref,curr)
-    print(result)
+
 
     
 if __name__ == "__main__":
