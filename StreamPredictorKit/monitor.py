@@ -5,6 +5,14 @@ import mlflow
 from mlflow import MlflowClient
 from prefect.blocks.system import Secret
 import os 
+import joblib
+import pandas as pd
+
+import psycopg2
+
+from evidently import ColumnMapping
+from evidently.report import Report
+from evidently.metrics import DatasetCorrelationsMetric
 
 
 # @task(name="Initilaize Mlflow and set aws environment")
@@ -23,6 +31,21 @@ def init_mlflow(mlflow_tracking_uri):
 
     return client
 
+def prep_db():
+    conn = psycopg2.connect("host=database port=5432 user=postgres password=example")
+    conn.autocommit = True
+    cursor = conn.cursor()
+    query = cursor.execute("SELECT 1 FROM pg_database WHERE datname='monitor'")
+    res = cursor.fetchall()
+    if len(res) == 0:
+        cursor.execute("create database user_data;")
+        cursor.close()
+        conn.close()
+    else:
+        cursor.close()
+        conn.close()
+
+
 def get_best_model(client):
     experiment_name = "Car Price Prediction Best features"
     current_experiment=dict(mlflow.get_experiment_by_name(experiment_name))
@@ -33,7 +56,40 @@ def get_best_model(client):
     return model
 
 def get_transformer():
+    preprocessor= joblib.load("../artifacts/transformer.joblib")
+    return preprocessor
+
+def set_variables():
+    prediction = 'prediction'
+    numerical_features = ["odometer","vehicle_age"]
+    categorical_features = ['region', 'manufacturer', 'condition', 'cylinders',
+                             'fuel', 'transmission', 'drive', 'type', 'paint_color']
     
+    return prediction,numerical_features,categorical_features
+
+def get_ref_data(preprocessor,numerical_features,categorical_features):
+    ref = pd.read_csv("../data/train_data.csv")
+    temp_x_ref = preprocessor.transform(ref[numerical_features + categorical_features])
+    return temp_x_ref,ref
+
+def get_curr_data(preprocessor,numerical_features,categorical_features):
+    curr = pd.read_csv("../data/test_data.csv")
+    temp_x_curr = preprocessor.transform(curr[numerical_features + categorical_features])
+    return temp_x_curr,curr
+
+def get_predictions(model,data):
+    return model.predict(data)
+
+# def map_columns_evidently(numerical_features,categorical_features):
+#     column_mapping = ColumnMapping()
+#     column_mapping.numerical_features = numerical_features
+#     column_mapping.categorical_features = categorical_features
+
+def run_evidently(ref,curr):
+    data_quality_dataset_report = Report(metrics=[DatasetCorrelationsMetric()])
+    data_quality_dataset_report.run(reference_data=ref, current_data=curr)
+    result = data_quality_dataset_report.as_dict()
+    return result
 
 
     
@@ -41,7 +97,22 @@ def get_transformer():
 
 # @flow(name="monitor")
 def monitor():
-    status()
+
+    ##############################################
+    MLFLOW_TRACKING_URI = "http://127.0.0.1:5000"
+    ##############################################
+
+    mlflow_client = init_mlflow(MLFLOW_TRACKING_URI)
+    model = get_best_model(mlflow_client)
+    pre_processor = get_transformer()
+    prediction,numerical_features,categorical_features=set_variables()
+    pre_ref,ref = get_ref_data(pre_processor,numerical_features,categorical_features)
+    pre_curr,curr = get_curr_data(pre_processor,numerical_features,categorical_features)
+    ref["prediction"] = get_predictions(model,pre_ref)
+    curr["prediction"] = get_predictions(model,pre_curr)
+    result = run_evidently(ref,curr)
+    print(result)
+
     
 if __name__ == "__main__":
     monitor()
