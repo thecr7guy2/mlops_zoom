@@ -11,7 +11,17 @@ from datetime import datetime
 
 import psycopg2
 from evidently.report import Report
-from evidently.metrics import DatasetCorrelationsMetric
+from evidently.metrics import DatasetDriftMetric
+
+CREATE_TABLE_STATEMENT = """
+CREATE TABLE IF NOT EXISTS drift_metrics (
+    timestamp TIMESTAMP,
+    number_of_columns INT,
+    number_of_drifted_columns INT,
+    dataset_drift BOOLEAN,
+    drift_detected BOOLEAN
+);
+"""
 
 
 # @task(name="Initilaize Mlflow and set aws environment")
@@ -44,6 +54,22 @@ def prep_db():
         cursor.close()
         conn.close()
 
+    with psycopg2.connect("host=localhost port=5432 dbname=monitor user=postgres password=example") as conn:
+        conn.autocommit = True
+        cursor = conn.cursor()
+        cursor.execute(CREATE_TABLE_STATEMENT)
+        cursor.close()
+
+    with psycopg2.connect("host=localhost port=5432 dbname=user_data user=postgres password=example") as conn:
+        conn.autocommit = True
+        cursor = conn.cursor()
+        count_query = "SELECT COUNT(*) FROM vehicle_data"
+        cursor.execute(count_query)
+        row_count = cursor.fetchone()[0]  
+        cursor.close()
+
+    return row_count
+
 def get_best_model(client):
     experiment_name = "Car Price Prediction Best features"
     current_experiment=dict(mlflow.get_experiment_by_name(experiment_name))
@@ -57,23 +83,33 @@ def get_transformer():
     preprocessor= joblib.load("../artifacts/transformer.joblib")
     return preprocessor
 
-def set_variables():
-    prediction = 'prediction'
-    numerical_features = ["odometer","vehicle_age"]
-    categorical_features = ['region', 'manufacturer', 'condition', 'cylinders',
-                             'fuel', 'transmission', 'drive', 'type', 'paint_color']
-    
-    return prediction,numerical_features,categorical_features
 
-def get_ref_data(preprocessor,numerical_features,categorical_features):
+def get_ref_data(preprocessor):
     ref = pd.read_csv("../data/train_data.csv")
-    temp_x_ref = preprocessor.transform(ref[numerical_features + categorical_features])
+    ref = ref.drop(columns=['price'])
+    temp_x_ref = preprocessor.transform(ref)
     return temp_x_ref,ref
 
-def get_curr_data(preprocessor,numerical_features,categorical_features):
-    curr = pd.read_csv("../data/test_data.csv")
-    temp_x_curr = preprocessor.transform(curr[numerical_features + categorical_features])
-    return temp_x_curr,curr
+def get_curr_data(preprocessor,ref):
+    with psycopg2.connect("host=localhost port=5432 dbname=user_data user=postgres password=example") as conn:
+        conn.autocommit = True
+        cursor = conn.cursor()
+        query = "SELECT * from vehicle_data"
+        cursor.execute(query)
+        tuples_list = cursor.fetchall()
+        cursor.close()
+        columns_pg = ref.columns.tolist()
+        columns_pg.insert(0, 'id')
+        curr = pd.DataFrame(tuples_list, columns=columns_pg)
+        curr = curr.drop(columns="id")
+        temp_x_curr = preprocessor.transform(curr)
+        return temp_x_curr,curr
+    # curr = pd.read_csv("../data/test_data.csv")
+    # curr = curr.drop(columns=['price'])
+    # temp_x_curr = preprocessor.transform(curr)
+    # return temp_x_curr,curr
+
+
 
 def get_predictions(model,data):
     return model.predict(data)
@@ -84,31 +120,44 @@ def get_predictions(model,data):
 #     column_mapping.categorical_features = categorical_features
 
 def run_evidently(ref,curr):
-    data_quality_dataset_report = Report(metrics=[DatasetCorrelationsMetric()])
-    data_quality_dataset_report.run(reference_data=ref, current_data=curr)
-    result = data_quality_dataset_report.as_dict()
+    data_drift_dataset_report = Report(metrics=[DatasetDriftMetric()])
+    data_drift_dataset_report.run(reference_data=ref,current_data=curr)
+    result=data_drift_dataset_report.as_dict()
     return result
 
 def send_metrics_to_db(result):
 
-    total_drift_detected = 2828
+    num_drifted_columns = result['metrics'][0]['result']['number_of_drifted_columns']
+    num_columns = result['metrics'][0]['result']['number_of_columns']
+    dataset_drift = result['metrics'][0]['result']['dataset_drift']
+
+    if num_drifted_columns/num_columns > 0.3 or dataset_drift:
+        drift_detected = True
+    else:
+        drift_detected = False 
+    
 
     with psycopg2.connect("host=localhost port=5432 dbname=monitor user=postgres password=example") as conn:
         conn.autocommit = True
         cursor = conn.cursor()
         cursor.execute(
-            "insert into evidently_drift_metrics(timestamp, model_drift, mmd_drift,cosine_dist_drift, total_drift_detected) values (%s, %s, %s, %s, %s)",
+            "insert into drift_metrics(timestamp, number_of_columns, number_of_drifted_columns, dataset_drift, drift_detected) values (%s, %s, %s, %s, %s)",
             (
                 datetime.now(),
-                model_drift,
-                mmd_drift,
-                cosine_dist_drift,
-                total_drift_detected,
+                num_columns,
+                num_drifted_columns,
+                dataset_drift,
+                drift_detected,
             ),
         )
 
-    if total_drift_detected:
+    if drift_detected:
+        #update the data (not possible for me :( )
         response = run_deployment(name='main-flow/train_deployement')
+        print("Model Has now been retrained as Drift was detected")
+
+    else:
+        print("No drift detected, The model is still good to go. Metrics have been pushed to the db")
     
 
 
@@ -117,19 +166,22 @@ def monitor():
     ##############################################
     MLFLOW_TRACKING_URI = "http://127.0.0.1:5000"
     ##############################################
-    prep_db()
-    mlflow_client = init_mlflow(MLFLOW_TRACKING_URI)
-    model = get_best_model(mlflow_client)
-    pre_processor = get_transformer()
-    prediction,numerical_features,categorical_features=set_variables()
-    pre_ref,ref = get_ref_data(pre_processor,numerical_features,categorical_features)
-    pre_curr,curr = get_curr_data(pre_processor,numerical_features,categorical_features)
-    ref["prediction"] = get_predictions(model,pre_ref)
-    curr["prediction"] = get_predictions(model,pre_curr)
-    result = run_evidently(ref,curr)
+    num_entries = prep_db()
 
+    if num_entries<30:
+        print("Moniotring not neeeded as insufficient data is present for monitoring")
+    else:
+        mlflow_client = init_mlflow(MLFLOW_TRACKING_URI)
+        model = get_best_model(mlflow_client)
+        pre_processor = get_transformer()
+        pre_ref,ref = get_ref_data(pre_processor)
+        pre_curr,curr = get_curr_data(pre_processor,ref)
+        ref["prediction"] = get_predictions(model,pre_ref)
+        curr["prediction"] = get_predictions(model,pre_curr)
+        result = run_evidently(ref.head(1000),curr)
+        print(result)
+        send_metrics_to_db(result)
 
-    
 if __name__ == "__main__":
     monitor()
 

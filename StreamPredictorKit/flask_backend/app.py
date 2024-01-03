@@ -41,7 +41,6 @@ model = mlflow.pyfunc.load_model(f"runs:/{best_run_id}/models_mlflow")
 CREATE_TABLE_STATEMENT = ''' CREATE TABLE IF NOT EXISTS vehicle_data (
     id SERIAL PRIMARY KEY,
     region VARCHAR(255),
-    price BIGINT,
     manufacturer VARCHAR(255),
     condition VARCHAR(255),
     cylinders VARCHAR(255),
@@ -70,18 +69,16 @@ with psycopg2.connect("host=database port=5432 dbname=user_data user=postgres pa
     cursor.execute(CREATE_TABLE_STATEMENT)
     cursor.close()
 
-def insert_data(vehicle_data,price):
-    int64_price = int(price)
+def insert_data(vehicle_data):
     with psycopg2.connect("host=database port=5432 dbname=user_data user=postgres password=example") as conn:
         conn.autocommit = True
         cursor = conn.cursor()
-        insert_query = """INSERT INTO vehicle_data (region, price, manufacturer, condition, cylinders, fuel, 
+        insert_query = """INSERT INTO vehicle_data (region, manufacturer, condition, cylinders, fuel, 
         odometer, transmission, drive, type, paint_color, vehicle_age)
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);"""
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);"""
 
         values = (
         vehicle_data["region"],
-        int64_price,
         vehicle_data["manufacturer"],
         vehicle_data["condition"],
         vehicle_data["cylinders"],
@@ -110,13 +107,13 @@ def inference(input_data,model,transformer):
 @app.route("/predict_car_price",methods=["POST"])
 def predict_endpoint():
     input_data=request.get_json()
+    insert_data(input_data)
     vehicle_cost = inference(input_data,model,transformer)
     # print("@@@@@@@@@")
     # print(type(vehicle_cost))
     # print(vehicle_cost)
     
     return_dict = {"vehicle_cost":vehicle_cost}
-    insert_data(input_data,vehicle_cost)
     return jsonify(return_dict)
 
 
