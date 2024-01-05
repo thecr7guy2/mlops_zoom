@@ -14,7 +14,7 @@ The used car market is often unpredictable, making it hard to accurately assess 
 
 ### Design & flow architecture
 
-<img src="images/pricemyride.png" width="720" height="640">
+<img src="images/pricemyride.png">
 
 
 ### Language, frameworks, libraries, Services and Tools used to bootstrap this project.
