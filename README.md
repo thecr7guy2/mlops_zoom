@@ -157,3 +157,18 @@ Once this command is executed, there are multiple services that are started. You
 
 
 <img src="images/streamlit.png">
+
+
+### Monitoring 
+
+
+
+
+### Code Best Practices
+
+The following have been developed:
+
+1. Unit test
+2. Integration test
+3. Auto code formatter using Black
+4. Makefile
