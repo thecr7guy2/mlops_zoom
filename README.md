@@ -75,9 +75,9 @@ make train
 ```
 The MLFlow User Interface is accessible at http://localhost:5000, thanks to Visual Studio Code's auto-setup for port forwarding. If it's not functioning as expected, ensure port 5000 is open in your EC2 instance's security rules. The UI can then be accessed via http://<ec2_public_address>:5000. Similarly, for Prefect, make sure the required port (default is 4200) is also forwarded or opened to access its dashboard, following similar steps.
 
-<img src="images/prefect_ui.png" width="1080" height="640">
+<img src="images/prefect_ui.png" width="1080" height="500">
 
-<img src="images/mlflow_ui.png" width="1080" height="640">
+<img src="images/mlflow_ui.png" width="1080" height="500">
 
 
 #### Setting up Prefect
