@@ -132,20 +132,24 @@ This command makes sure that whenever the monitor deployement is triggered, The 
 
 <img src="images/prefect_deployements.png">
 
+After executing the commands, you will notice that two deployments will be visible in the Prefect UI. Before initiating this deployment, it's essential to launch an agent. The agent will continually poll for deployments.
+
+Since the training process is computationally intensive, I prefer to run it on my local instance. To do this, I start the agent on my local machine using the following command:
+
+```bash
+prefect agent start -q 'test'
+```
+
+Now u can run the deployement from prefect ui, schedule it or trigger it from other deployements.
+
+<img src="images/prefect_train.png">
 
 
+### Deploying the application
 
+To deploy the application, simply use the command 
 
+```bash
+make deploy
+```
 
-
-#### Deploying the application
-
-
-Once the MLFlow tracking server is ready, the training code can be ran. The overview of train/pipeline/train_pipe.py is as such:
-
-
-1. Initialize MLFlow tracking URI and experiment name
-2. Get the training and test datasets
-3. Data preprocessing
-4. Model training and hyperparameter runing
-5. Model registry staging
