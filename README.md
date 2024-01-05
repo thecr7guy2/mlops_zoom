@@ -1,6 +1,6 @@
 ## MLOps Capstone Project: Pricemyride
 
-<img src="images/cover.png" width="1080" height="640">
+<img src="images/cover.png" width="1080" height="900">
 
 ### Project Description
 
