@@ -153,3 +153,7 @@ To deploy the application, simply use the command
 make deploy
 ```
 
+Once this command is executed, there are multiple services that are started. You can find the frontend to interact with the app at [http://<ec2_public_address>:8501](http://<ec2_public_address>:8501)
+
+
+<img src="images/streamlit.png">
