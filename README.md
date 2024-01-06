@@ -204,7 +204,7 @@ As my knowledge continues to evolve, I plan to incorporate additional performanc
 
 The following have been developed:
 
-- [] Unit test
-- [] Integration test
+- [ ] Unit test
+- [ ] Integration test
 - [x] Auto code formatter using Black
 - [x] Makefile
