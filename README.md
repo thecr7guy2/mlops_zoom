@@ -37,6 +37,16 @@ The used car market is often unpredictable, making it hard to accurately assess 
 * ![Linux](https://img.shields.io/badge/Linux_Bash_Scripting-FCC624?style=for-the-badge&logo=linux&logoColor=black)
 
 
+### Project overview
+PRICEMYRIDE integrates a variety of services and tools  a cloud-based setup with automated training, monitoring, and inference processes.
+The ML model to predict vehicle prices, is trained locally with gradient boosting frameworks like XGBoost. The trained model is containerized using Docker.
+
+For deployment, the ML model is sent to an Amazon EC2 instance where it's monitored by Evidently AI, a tool used for monitoring ML models in production. The monitoring script monitor.py is scheduled by Prefect, a workflow management system, ensures that the model is performing as expected and triggers retraining if drift is detected.
+
+The inference process is handled by a Flask backend, which is also containerized using Docker for consistent deployment. Gunicorn serves as the WSGI server, interfacing between Flask and the web. This backend interacts with a PostgreSQL database, storing monitoring metrics and the model's predictions. The monitoring metrics are visualized using Grafana, which provides a real-time monitoring dashboard for the analytics.
+
+The frontend is powered by Streamlit, which is known for its ability to create interactive web apps quickly, making it accessible to stakeholders to input data and receive ride pricing predictions. The MLflow tool is used for experiment tracking and model management, while artifacts are stored in an S3 bucket, demonstarting a systematic approach to tracking and storing different versions of the ML model.
+
 
 
 ### Gathering and Preprocessing Vehicle Data
@@ -158,8 +168,34 @@ Once this command is executed, there are multiple services that are started. You
 
 <img src="images/streamlit.png">
 
+You can also access adminer to check out the data entered by the users or the drift metrics calculated from evidently at [http://localhost:8080](http://localhost:8080)
 
-### Monitoring 
+
+Check the status of the Docker containers to ensure all services are running using
+
+```bash
+docker ps
+```
+If any docker service fails to start or you encounter any errors, check the Docker container logs for error messages:
+
+```bash
+docker logs <container_name>
+```
+
+### Monitoring
+Effective monitoring is crucial for maintaining the health of the PriceMyRide application. So we constanly run a prefect deployement 4 times a day to check if there is any data drift or model drift encountered.
+
+#### Monitoring Services
+- **Evidently AI**: Monitors the performance and data drift of the ML model.
+- **Grafana**: Provides dashboards for real-time analytics and system metrics.
+
+#### Accessing Monitoring Tools
+- **Grafana Dashboard**: Access the Grafana interface at `http://<ec2_public_address>:3000`. Default login details can be found in the deployment configuration file.
+
+#### Performance Metrics Approach
+
+For PriceMyRide, we focused on tracking data drift metrics first. This was a strategic choice, ensuring our model stays up-to-date with market changes. 
+As my knowledge continues to evolve, I plan to incorporate additional performance metrics over time.
 
 
 
@@ -168,7 +204,7 @@ Once this command is executed, there are multiple services that are started. You
 
 The following have been developed:
 
-1. Unit test
-2. Integration test
-3. Auto code formatter using Black
-4. Makefile
+- [] Unit test
+- [] Integration test
+- [x] Auto code formatter using Black
+- [x] Makefile
